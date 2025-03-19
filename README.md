@@ -49,3 +49,46 @@ Adapun pada device saya, request yang diterima kurang lebih :
 4. Keamanan: Header seperti Sec-Fetch-Site, Sec-Fetch-Mode, dan Sec-Fetch-User membantu mencegah serangan keamanan seperti CSRF.
 
 ## Commit 2
+
+<div align="center">
+    <img src="assets/images/commit-2.jpg" alt="commit-2"/>
+</div>
+
+Pada versi terbaru dari fungsi `handle_connection`, ada beberapa perubahan penting dibandingkan versi sebelumnya:  
+
+### **1. Menambahkan Respons HTTP**  
+Sebelumnya, fungsi hanya membaca dan mencetak permintaan HTTP ke konsol. Sekarang, ia juga mengirimkan respons HTTP ke klien.  
+
+```rust
+let status_line = "HTTP/1.1 200 OK"; 
+```
+- Menentukan status respons HTTP. Di sini, kita mengembalikan kode status **200 OK**, yang berarti permintaan berhasil.  
+
+### **2. Membaca Konten dari File (`hello.html`)**  
+
+```rust
+let contents = fs::read_to_string("hello.html").unwrap(); 
+let length = contents.len();
+```
+- `fs::read_to_string("hello.html")` membaca isi file `hello.html` sebagai string.  
+- `contents.len()` menghitung panjang konten untuk dikirimkan dalam respons HTTP.  
+
+### **3. Menyusun Respons HTTP Lengkap**  
+```rust
+let response = format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
+```
+- `format!` digunakan untuk menyusun respons HTTP.  
+- `\r\n` digunakan untuk memisahkan header dan body dalam format HTTP.  
+
+### **4. Menulis Respons ke `stream`**  
+```rust
+stream.write_all(response.as_bytes()).unwrap();
+```
+- `write_all()` mengirimkan respons HTTP ke klien dalam bentuk byte.  
+- `unwrap()` digunakan untuk menangani kemungkinan error saat menulis ke stream.  
+
+TLDR :
+Perbedaan utama dari versi sebelumnya adalah:  
+1. **Menambahkan Respons HTTP** → Sekarang fungsi tidak hanya membaca request tetapi juga mengirimkan respons.  
+2. **Membaca File HTML** → Menggunakan `fs::read_to_string` untuk membaca file dan menggunakannya sebagai body respons.  
+3. **Menyusun dan Mengirimkan Respons HTTP** → Membentuk format HTTP yang valid dan mengirimkan respons ke klien.  
