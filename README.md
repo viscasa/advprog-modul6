@@ -3,7 +3,7 @@
 </div>
 
 <div align="center">
-    <img src="media/burhan_pixel.png" alt="burhan" width="200"/>
+    <img src="assets/images/burhan_pixel.png" alt="burhan" width="200"/>
 </div>
 
 <div align="center">
@@ -47,3 +47,5 @@ Adapun pada device saya, request yang diterima kurang lebih :
 2. User-Agent: Browser yang digunakan adalah Chrome versi 134 di Windows.
 3. Cookie: Terdapat informasi sesi pengguna dengan user_role=Pelanggan dan user_name=Andi, yang menunjukkan bahwa klien sudah login. (Ini merupakan cookies dari matkul Basdat)
 4. Keamanan: Header seperti Sec-Fetch-Site, Sec-Fetch-Mode, dan Sec-Fetch-User membantu mencegah serangan keamanan seperti CSRF.
+
+## Commit 2
