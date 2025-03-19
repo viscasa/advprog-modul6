@@ -96,6 +96,11 @@ Perbedaan utama dari versi sebelumnya adalah:
 
 ## Commit 3
 
+<div align="center">
+    <img src="assets/images/commit-3.jpg" alt="commit-2"/>
+</div>
+
+
 ### **Pemisahan Respons HTTP**  
 Pemisahan respons HTTP dilakukan dengan mengecek request yang dilakukan oleh pengguna :
   - Jika request adalah `GET / HTTP/1.1`, berarti pengguna mengakses halaman utama → Kirim **status 200 OK** dan file `hello.html`.  
