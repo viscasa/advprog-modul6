@@ -150,3 +150,19 @@ TLDR :
 1.  Sekarang response yang diberikan bergantung pada request yang diminta oleh pengguna. if halaman utama → hello.html, else → 404.html.
 2. **Mengurangi duplikasi kode** → Tidak perlu menulis ulang proses membaca file dan menyusun respons di setiap cabang `if-else`.  
 3. **Memisahkan elemen yang berbeda** → Status line dan nama file ditentukan terlebih dahulu sebelum membaca file.  
+
+## Commit 4
+
+Pada perubahan ini, saya menambahkan rute `GET /sleep HTTP/1.1`, yang menyebabkan server **menunggu 10 detik** sebelum mengirimkan respons.  
+
+#### **Membuka Dua Tab Browser**  
+1. **Tab 1:** Akses `127.0.0.1/sleep` → Server menunda respons selama **10 detik**.  
+2. **Tab 2:** Akses `127.0.0.1/` → Peramban juga mengalami **penundaan** meskipun tidak meminta `/sleep`.  
+
+#### **Mengapa Ini Terjadi?**  
+- Server saat ini berjalan secara **sinkron**, artinya setiap permintaan diproses **satu per satu**.  
+- Ketika `/sleep` dipanggil, **thread utama tertahan selama 10 detik**, sehingga **permintaan lain juga harus menunggu** hingga proses ini selesai.  
+
+#### **Implikasi Jika Banyak Pengguna?**  
+- Jika banyak pengguna mengakses `/sleep`, server akan menjadi **lambat atau bahkan tidak merespons**.  
+- Ini menunjukkan **batasan server berbasis single-thread** untuk menangani banyak koneksi secara bersamaan.  
