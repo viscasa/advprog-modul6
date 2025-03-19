@@ -88,7 +88,60 @@ stream.write_all(response.as_bytes()).unwrap();
 - `unwrap()` digunakan untuk menangani kemungkinan error saat menulis ke stream.  
 
 TLDR :
+
 Perbedaan utama dari versi sebelumnya adalah:  
 1. **Menambahkan Respons HTTP** → Sekarang fungsi tidak hanya membaca request tetapi juga mengirimkan respons.  
 2. **Membaca File HTML** → Menggunakan `fs::read_to_string` untuk membaca file dan menggunakannya sebagai body respons.  
 3. **Menyusun dan Mengirimkan Respons HTTP** → Membentuk format HTTP yang valid dan mengirimkan respons ke klien.  
+
+## Commit 3
+
+### **Pemisahan Respons HTTP**  
+Pemisahan respons HTTP dilakukan dengan mengecek request yang dilakukan oleh pengguna :
+  - Jika request adalah `GET / HTTP/1.1`, berarti pengguna mengakses halaman utama → Kirim **status 200 OK** dan file `hello.html`.  
+  - Jika request berbeda → Kirim **status 404 NOT FOUND** dan file `404.html`.  
+
+### **Mengapa Refactoring Diperlukan?**  
+Pada versi sebelumnya, ada banyak duplikasi dalam `if` dan `else`. Kedua blok kode melakukan:  
+1. **Membaca file**  
+2. **Menghitung panjang konten**  
+3. **Menyusun dan mengirimkan respons**  
+
+Satu-satunya perbedaan adalah nilai **status line** dan **nama file**. Dengan refactoring, kita memisahkan bagian yang berbeda ke dalam variabel (`status_line` dan `filename`) dan menggunakan variabel ini dalam kode selanjutnya.  
+
+Kode sebelum refactoring (kurang efisien):  
+```rust
+if request_line == "GET / HTTP/1.1" {
+    let status_line = "HTTP/1.1 200 OK";
+    let filename = "hello.html";
+    let contents = fs::read_to_string(filename).unwrap(); 
+    let length = contents.len();
+    let response = format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
+    stream.write_all(response.as_bytes()).unwrap();
+} else {
+    let status_line = "HTTP/1.1 404 NOT FOUND";
+    let filename = "404.html";
+    let contents = fs::read_to_string(filename).unwrap(); 
+    let length = contents.len();
+    let response = format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
+    stream.write_all(response.as_bytes()).unwrap();
+}
+```
+  
+Kode setelah refactoring (lebih ringkas dan lebih mudah dipahami):  
+```rust
+let (status_line, filename) = if request_line == "GET / HTTP/1.1" {
+    ("HTTP/1.1 200 OK", "hello.html")
+} else {
+    ("HTTP/1.1 404 NOT FOUND", "404.html")
+};
+let contents = fs::read_to_string(filename).unwrap(); 
+let length = contents.len();
+let response = format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
+stream.write_all(response.as_bytes()).unwrap();
+```
+  
+TLDR : 
+1.  Sekarang response yang diberikan bergantung pada request yang diminta oleh pengguna. if halaman utama → hello.html, else → 404.html.
+2. **Mengurangi duplikasi kode** → Tidak perlu menulis ulang proses membaca file dan menyusun respons di setiap cabang `if-else`.  
+3. **Memisahkan elemen yang berbeda** → Status line dan nama file ditentukan terlebih dahulu sebelum membaca file.  
