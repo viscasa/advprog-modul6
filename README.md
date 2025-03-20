@@ -179,4 +179,41 @@ Sebelumnya, server menangani setiap koneksi **secara sinkron**, menyebabkan antr
 - Jika satu worker sedang menangani request `/sleep`, worker lain tetap bisa menangani permintaan `/` tanpa menunggu.  
 
 TLDR :
+
 Dengan ditambahkannya threadpool, sekarang server bisa menangani beberapa request bersamaan. Satu request tidak akan menghambat request lain (pada kasus kode ini hanya dimaksimalkan 4 thread untuk menghindari pembuatan thread yang terlalu banyak). 
+
+## Commit (Bonus)
+
+### Using new()
+<div align="center">
+    <img src="assets/images/commit-bonus-new.jpg" alt="commit-2"/>
+</div>
+
+### Using build()
+<div align="center">
+    <img src="assets/images/commit-bonus-build.jpg" alt="commit-2"/>
+</div>
+
+---
+
+Untuk mengubah fungsi `new` menjadi `build`, kita perlu menggantinya agar mengembalikan `Result<ThreadPool, PoolCreationError>` daripada langsung membuat `ThreadPool`.  
+
+
+## **Langkah-langkah Implementasi**
+1. **Buat `PoolCreationError` sebagai Enum**  
+   - Ini akan digunakan untuk menangani error jika ukuran pool tidak valid (misalnya, `size == 0`).
+
+2. **Ubah `new` menjadi `build`**  
+   - Jika `size == 0`, kembalikan error.  
+   - Jika valid, buat `ThreadPool` seperti biasa.  
+
+## **Perbedaan `new` vs. `build`**
+| Fungsi  | Pendekatan | Mengembalikan Error? |  
+|---------|------------|--------------------|  
+| `new(size: usize) -> ThreadPool` | **Langsung panic dengan `assert!`** | Tidak menangani error dengan baik |  
+| `build(size: usize) -> Result<ThreadPool, PoolCreationError>` | **Menggunakan `Result`** | Mengembalikan error jika `size == 0` |  
+
+TLDR :
+
+**Pendekatan `build` lebih fleksibel** dibanding `new`, karena bisa menangani error dengan `Result`.  
+**Tidak perlu panik (`panic!`) saat ukuran pool tidak valid**, cukup kembalikan `Err(PoolCreationError::InvalidSize)`.
