@@ -157,7 +157,7 @@ Pada perubahan ini, saya menambahkan rute `GET /sleep HTTP/1.1`, yang menyebabka
 
 #### **Membuka Dua Tab Browser**  
 1. **Tab 1:** Akses `127.0.0.1/sleep` → Server menunda respons selama **10 detik**.  
-2. **Tab 2:** Akses `127.0.0.1/` → Peramban juga mengalami **penundaan** meskipun tidak meminta `/sleep`.  
+2. **Tab 2:** Akses `127.0.0.1/` → Web juga mengalami **penundaan** meskipun tidak meminta `/sleep`.  
 
 #### **Mengapa Ini Terjadi?**  
 - Server saat ini berjalan secara **sinkron**, artinya setiap permintaan diproses **satu per satu**.  
@@ -166,3 +166,17 @@ Pada perubahan ini, saya menambahkan rute `GET /sleep HTTP/1.1`, yang menyebabka
 #### **Implikasi Jika Banyak Pengguna?**  
 - Jika banyak pengguna mengakses `/sleep`, server akan menjadi **lambat atau bahkan tidak merespons**.  
 - Ini menunjukkan **batasan server berbasis single-thread** untuk menangani banyak koneksi secara bersamaan.  
+
+## Commit 5
+
+#### **1. Apa yang Berubah?**  
+Sebelumnya, server menangani setiap koneksi **secara sinkron**, menyebabkan antrian permintaan jika ada proses yang lambat (misalnya, `/sleep`). Sekarang, server menggunakan **ThreadPool** untuk menangani koneksi secara **paralel** dengan beberapa worker threads.  
+
+#### **2. Bagaimana `ThreadPool` Bekerja?**  
+- **Saat server dimulai**, `ThreadPool::new(4)` membuat **4 worker threads** yang siap mengeksekusi tugas.  
+- **Setiap permintaan masuk**, `pool.execute(|| { handle_connection(stream); })` mengirimkan tugas ke antrian melalui **mpsc (multi-producer, single-consumer) channel**.  
+- **Worker threads** mengambil tugas dari antrian dan mengeksekusinya.  
+- Jika satu worker sedang menangani request `/sleep`, worker lain tetap bisa menangani permintaan `/` tanpa menunggu.  
+
+TLDR :
+Dengan ditambahkannya threadpool, sekarang server bisa menangani beberapa request bersamaan. Satu request tidak akan menghambat request lain (pada kasus kode ini hanya dimaksimalkan 4 thread untuk menghindari pembuatan thread yang terlalu banyak). 
